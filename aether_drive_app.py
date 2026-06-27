@@ -1,53 +1,36 @@
 import streamlit as st
-import sqlite3
 import random
 import time
 
 # Configuração da página idêntica à original
 st.set_page_config(page_title="Impulso Etéreo", page_icon="🔮", layout="wide")
 
-# Inicialização profissional do Banco de Dados
-def verificar_banco():
-    conn = sqlite3.connect("aether_drive.db")
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS usuarios (
-            id TEXT PRIMARY KEY,
-            nome TEXT,
-            tipo TEXT,
-            cpf TEXT,
-            verificado TEXT,
-            biometria TEXT,
-            saldo REAL
-        )
-    """)
-    conn.commit()
-    conn.close()
+# --- ESTADO DA SESSÃO (Banco de Dados na Memória da Nuvem) ---
+if "banco_usuarios" not in st.session_state:
+    st.session_state.banco_usuarios = {
+        "17484830720": {"nome": "Pedro Felix da Silva", "tipo": "passenger", "saldo": 50.00},
+        "19399003795": {"nome": "Usuário Teste", "tipo": "passenger", "saldo": 50.00}
+    }
 
-verificar_banco()
-
-# --- ESTADO DA SESSÃO (Para lembrar quem está logado) ---
 if "usuario_logado" not in st.session_state:
     st.session_state.usuario_logado = None
 
-# --- MENU LATERAL IDÊNTICO À FOTO ---
+# --- MENU LATERAL IDÊNTICO ---
 st.sidebar.title("Impulso Etéreo")
 st.sidebar.markdown("---")
 pagina = st.sidebar.radio("Navegação", ["Login / Cadastro", "Painel Passageiro", "Painel Administrador"])
 st.sidebar.markdown("---")
 
-# Exibe o status do usuário logado no menu lateral
 if st.session_state.usuario_logado:
     st.sidebar.success(f"👤 Logado: {st.session_state.usuario_logado['nome']}")
 else:
     st.sidebar.write("Nenhum usuário logado.")
 
 st.sidebar.markdown("---")
-# Indicadores técnicos do painel que estavam na foto
-st.sidebar.code("📁 Banco: aether_drive.db")
-st.sidebar.code("🛠️ Demonstração administrativa do Senhor: aether_BR26")
+st.sidebar.code("🌐 Banco: Nuvem Ativa")
+st.sidebar.code("🛠️ Demonstração: aether_BR26")
 
-# --- 1. TELA DE LOGIN / CADASTRO COM AS DUAS COLUNAS DA FOTO ---
+# --- 1. TELA DE LOGIN / CADASTRO ---
 if pagina == "Login / Cadastro":
     st.caption("Autenticação com CPF + validação biométrica facial (selfie simulada).")
     
@@ -56,54 +39,50 @@ if pagina == "Login / Cadastro":
     # Coluna 1: Entrar na plataforma
     with col1:
         st.header("Entrar")
-        cpf_login = st.text_input("CPF cadastrado", "000.000.000-00", key="login_cpf")
+        cpf_login = st.text_input("CPF cadastrado", "", key="login_cpf")
         
         if st.button("Entrar na plataforma", use_container_width=True, type="primary"):
-            conn = sqlite3.connect("aether_drive.db")
-            cursor = conn.cursor()
-            cursor.execute("SELECT nome, tipo, saldo FROM usuarios WHERE cpf = ?", (cpf_login,))
-            resultado = cursor.fetchone()
-            conn.close()
+            cpf_limpo = cpf_login.strip().replace(".", "").replace("-", "")
             
-            if resultado:
-                st.session_state.usuario_logado = {"nome": resultado[0], "tipo": resultado[1], "saldo": resultado[2]}
-                st.success(f"👋 Bem-vindo de volta, {resultado[0]}!")
+            if cpf_limpo in st.session_state.banco_usuarios:
+                st.session_state.usuario_logado = st.session_state.banco_usuarios[cpf_limpo]
+                st.success(f"👋 Bem-vindo de volta, {st.session_state.banco_usuarios[cpf_limpo]['nome']}!")
                 st.rerun()
             else:
-                st.error("❌ CPF não encontrado. Faça o cadastro ao lado primeiro.")
+                st.error("❌ CPF não encontrado. Faça o cadastro ao lado primeiro ou use seu CPF já pré-configurado.")
 
     # Coluna 2: Novo Cadastro Completo
     with col2:
         st.header("Novo cadastro")
         nome_novo = st.text_input("Nome completo", "pedro felix")
-        # Escrevendo "passenger" para evitar conflito com filtros de tradução do navegador
         tipo_novo = st.selectbox("Tipo de conta", ["passenger", "motorista"])
-        cpf_novo = st.text_input("CPF", "000.000.000-00", key="cadastro_cpf")
-        selfie_novo = st.text_input("Token da Selfie (biometria)", "selfie_pedro_ok")
+        cpf_novo = st.text_input("CPF", "", key="cadastro_cpf")
+        selfie_novo = st.text_input("Token da Selfie (biometria)", "selfie_ok")
         saldo_inicial = st.number_input("Saldo inicial (passageiro)", value=50.00, step=10.00)
         
         if st.button("Cadastrar e Validar por IA", use_container_width=True):
-            with st.spinner("IA executando prova de vida e checagem de antecedentes..."):
-                time.sleep(1.5)
-                
-                conn = sqlite3.connect("aether_drive.db")
-                cursor = conn.cursor()
-                id_gerado = f"USR-{random.randint(100, 999)}"
-                
-                cursor.execute("""
-                    INSERT OR REPLACE INTO usuarios (id, nome, tipo, cpf, verificado, biometria, saldo)
-                    VALUES (?, ?, ?, ?, 'sim', 'sim', ?)
-                """, (id_gerado, nome_novo, tipo_novo, cpf_novo, saldo_inicial))
-                conn.commit()
-                conn.close()
-                
-                st.success(f"🎉 Conta criada com sucesso! Biometria aprovada para {nome_novo}.")
+            if not cpf_novo:
+                st.error("⚠️ Por favor, digite um CPF para realizar o cadastro.")
+            else:
+                with st.spinner("IA executando prova de vida..."):
+                    time.sleep(1.0)
+                    cpf_novo_limpo = cpf_novo.strip().replace(".", "").replace("-", "")
+                    st.session_state.banco_usuarios[cpf_novo_limpo] = {
+                        "nome": nome_novo,
+                        "tipo": tipo_novo,
+                        "saldo": saldo_inicial
+                    }
+                    st.success(f"🎉 Conta criada com sucesso! O CPF {cpf_novo} já pode fazer login na coluna da esquerda.")
 
 # --- 2. PAINEL DO PASSAGEIRO ---
 elif pagina == "Painel Passageiro":
     st.title("🗺️ Solicitar Viagem Preditiva")
+    
     if st.session_state.usuario_logado:
         st.write(f"Olá {st.session_state.usuario_logado['nome']}, seu saldo atual é de R$ {st.session_state.usuario_logado['saldo']:.2f}")
+    else:
+        st.warning("⚠️ Você precisa fazer o login na primeira tela para ver seu saldo real.")
+        st.write("Olá passageiro, seu saldo demonstrativo é de R$ 50,00")
     
     destino = st.text_input("Para onde vamos hoje?", "Av. Paulista, São Paulo")
     
