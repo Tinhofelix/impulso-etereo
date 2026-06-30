@@ -295,7 +295,7 @@ elif pagina == "Painel Passageiro":
 
         st.info("🚘 O motorista está a caminho.")
 
-    st.markdown("---")
+        st.markdown("---")
 st.subheader("⭐ Avaliar motorista")
 
 nota = st.slider(
