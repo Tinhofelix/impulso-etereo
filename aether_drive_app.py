@@ -103,4 +103,4 @@ elif pagina == "Painel Administrador":
     caixa1, caixa2 = st.columns(2)
     caixa1.metric("Seu Lucro Líquido Retido (15%)", "R$ 1,28", delta="Faturamento Ativo")
     caixa2.metric("Repasse Líquido do Motorista (85%)", "R$ 7,25")
-    st.success("💰 Transações Pix liquidadas e seguras pelo motor da rede.") Strin.out.prinln(String ags []
+    st.success("💰 Transações Pix liquidadas e seguras pelo motor da rede.") 
