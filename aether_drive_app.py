@@ -166,4 +166,148 @@ st.sidebar.caption(
     f"📍 {st.session_state.config['cidade']}"
 )
 
+# =====================================
+# LOGIN / CADASTRO
+# =====================================
+
+if pagina == "Login / Cadastro":
+
+    st.title("🔐 Login e Cadastro")
+
+    col1, col2 = st.columns(2)
+
+    # =====================================
+    # LOGIN
+    # =====================================
+
+    with col1:
+
+        st.subheader("Entrar")
+
+        cpf_login = st.text_input(
+            "CPF",
+            key="cpf_login"
+        ).strip()
+
+        if st.button(
+            "Entrar",
+            use_container_width=True,
+            type="primary"
+        ):
+
+            if cpf_login in st.session_state.usuarios:
+
+                st.session_state.usuario_logado = (
+                    st.session_state.usuarios[cpf_login]
+                )
+
+                st.success(
+                    f"Bem-vindo, {st.session_state.usuario_logado['nome']}!"
+                )
+
+                st.rerun()
+
+            else:
+
+                st.error("CPF não encontrado.")
+
+    # =====================================
+    # CADASTRO
+    # =====================================
+
+    with col2:
+
+        st.subheader("Novo Cadastro")
+
+        nome = st.text_input(
+            "Nome completo",
+            key="novo_nome"
+        )
+
+        cpf = st.text_input(
+            "CPF",
+            key="novo_cpf"
+        ).strip()
+
+        tipo = st.selectbox(
+            "Tipo de conta",
+            (
+                "passageiro",
+                "motorista"
+            )
+        )
+
+        if st.button(
+            "Cadastrar",
+            use_container_width=True
+        ):
+
+            if nome == "" or cpf == "":
+
+                st.warning("Preencha todos os campos.")
+
+            elif cpf in st.session_state.usuarios:
+
+                st.error("Este CPF já está cadastrado.")
+
+            else:
+
+                novo_usuario = {
+
+                    "cpf": cpf,
+
+                    "nome": nome,
+
+                    "tipo": tipo,
+
+                    "saldo": 50.0 if tipo == "passageiro" else 0.0,
+
+                    "nota": 5.0 if tipo == "motorista" else 0.0,
+
+                    "distancia": round(
+                        random.uniform(0.3, 5.0),
+                        2
+                    ),
+
+                    "online": True
+
+                }
+
+                st.session_state.usuarios[cpf] = novo_usuario
+
+                st.session_state.notificacoes.append(
+                    f"Novo usuário cadastrado: {nome}"
+                )
+
+                st.success("Cadastro realizado com sucesso!")
+
+                st.balloons()
+
+                st.rerun()
+
+    st.markdown("---")
+
+    st.subheader("📊 Resumo da Plataforma")
+
+    passageiros = sum(
+        1 for u in st.session_state.usuarios.values()
+        if u["tipo"] == "passageiro"
+    )
+
+    motoristas = sum(
+        1 for u in st.session_state.usuarios.values()
+        if u["tipo"] == "motorista"
+    )
+
+    c1, c2 = st.columns(2)
+
+    c1.metric(
+        "👥 Passageiros",
+        passageiros
+    )
+
+    c2.metric(
+        "🚗 Motoristas",
+        motoristas
+    )
 
