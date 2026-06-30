@@ -443,8 +443,8 @@ elif pagina == "Painel Administrador":
 
     st.title("👑 Painel do Administrador")
 
-    usuarios = st.session_state.usuarios
     historico = st.session_state.get("historico", [])
+    usuarios = st.session_state.usuarios
 
     passageiros = [
         u for u in usuarios.values()
@@ -456,17 +456,11 @@ elif pagina == "Painel Administrador":
         if u["tipo"] == "motorista"
     ]
 
-    faturamento_total = sum(
-        viagem["valor"] for viagem in historico
-    )
+    faturamento = sum(v["valor"] for v in historico)
 
-    lucro_empresa = sum(
-        viagem["valor"] *
-        st.session_state.taxa_empresa / 100
-        for viagem in historico
-    )
+    lucro = faturamento * st.session_state.taxa_empresa / 100
 
-    st.subheader("📊 Resumo Geral")
+    st.subheader("📊 Resumo da Plataforma")
 
     c1, c2 = st.columns(2)
 
@@ -489,68 +483,52 @@ elif pagina == "Painel Administrador":
 
     c4.metric(
         "💰 Faturamento",
-        f"R$ {faturamento_total:.2f}"
+        f"R$ {faturamento:.2f}"
     )
 
     st.metric(
-        "🏦 Lucro da Plataforma",
-        f"R$ {lucro_empresa:.2f}"
+        "🏦 Lucro da Empresa",
+        f"R$ {lucro:.2f}"
     )
 
     st.markdown("---")
 
-    st.subheader("⚙️ Configuração da Comissão")
+    st.subheader("⚙️ Comissão da Plataforma")
 
-    nova_taxa = st.slider(
-        "Porcentagem da plataforma (%)",
+    st.session_state.taxa_empresa = st.slider(
+        "Comissão (%)",
         min_value=0,
         max_value=30,
         value=st.session_state.taxa_empresa
     )
 
-    if nova_taxa != st.session_state.taxa_empresa:
-        st.session_state.taxa_empresa = nova_taxa
-        st.success(
-            f"Nova comissão definida em {st.session_state.taxa_empresa}%."
-        )
+    st.success(
+        f"Comissão atual: {st.session_state.taxa_empresa}%"
+    )
 
     st.markdown("---")
 
-    st.subheader("👤 Passageiros Cadastrados")
-
-    for passageiro in passageiros:
-
-        st.write(
-            f"• {passageiro['nome']} | "
-            f"Saldo: R$ {passageiro['saldo']:.2f}"
-        )
-
-    st.markdown("---")
-
-    st.subheader("🚗 Motoristas")
-
-    for motorista in motoristas:
-
-        st.write(
-            f"• {motorista['nome']} | "
-            f"Saldo: R$ {motorista['saldo']:.2f}"
-        )
-
-    st.markdown("---")
-
-    st.subheader("📜 Últimas Corridas")
+    st.subheader("📜 Histórico de Corridas")
 
     if len(historico) == 0:
 
-        st.info("Nenhuma corrida registrada.")
+        st.info("Nenhuma corrida realizada.")
 
     else:
 
         for viagem in reversed(historico):
 
             st.write(
-                f"🚖 {viagem['passageiro']} → "
-                f"{viagem['destino']} | "
-                f"{viagem['motorista']} | "
-                f"R$ {viagem['valor']:.2f}"
+                f"🚖 {viagem['passageiro']} "
+                f"→ {viagem['destino']}"
             )
+
+            st.write(
+                f"👨‍✈️ Motorista: {viagem['motorista']}"
+            )
+
+            st.write(
+                f"💰 Valor: R$ {viagem['valor']:.2f}"
+            )
+
+            st.markdown("---")
