@@ -295,22 +295,22 @@ for i, etapa in enumerate(status):
 
 st.success("🎉 Corrida concluída com sucesso!")
 
-        c1, c2, c3 = st.columns(3)
+c1, c2, c3 = st.columns(3)
 
-        c1.metric(
-            "Motorista",
-            motorista["nome"]
-        )
+c1.metric(
+    "Motorista",
+    motorista["nome"]
+)
 
-        c2.metric(
-            "Nota",
-            f"⭐ {motorista['nota']}"
-        )
+c2.metric(
+    "Nota",
+    f"⭐ {motorista['nota']}"
+)
 
-        c3.metric(
-            "Distância",
-            f"{motorista['distancia']} km"
-        )
+c3.metric(
+    "Distância",
+    f"{motorista['distancia']} km"
+)
 
         st.info("🚘 O motorista está a caminho.")
 
