@@ -569,3 +569,176 @@ elif pagina == "Painel Passageiro":
 
                 )
 
+# =====================================
+# PAINEL DO MOTORISTA
+# =====================================
+
+elif pagina == "Painel Motorista":
+
+    st.title("🚗 Painel do Motorista")
+
+    if not st.session_state.usuario_logado:
+        st.warning("Faça login primeiro.")
+        st.stop()
+
+    usuario = st.session_state.usuario_logado
+
+    if usuario["tipo"] != "motorista":
+        st.error("Esta conta não pertence a um motorista.")
+        st.stop()
+
+    st.success(f"Bem-vindo, {usuario['nome']}!")
+
+    c1, c2, c3 = st.columns(3)
+
+    c1.metric(
+        "💰 Saldo",
+        f"R$ {usuario['saldo']:.2f}"
+    )
+
+    c2.metric(
+        "⭐ Nota",
+        f"{usuario['nota']:.1f}"
+    )
+
+    c3.metric(
+        "📍 Distância",
+        f"{usuario['distancia']} km"
+    )
+
+    st.markdown("---")
+
+    # ===============================
+    # STATUS ONLINE
+    # ===============================
+
+    usuario["online"] = st.toggle(
+        "Motorista Online",
+        value=usuario.get("online", True)
+    )
+
+    if usuario["online"]:
+        st.success("🟢 Você está disponível para receber corridas.")
+    else:
+        st.warning("🔴 Você está Offline.")
+
+    st.markdown("---")
+
+    # ===============================
+    # ESTATÍSTICAS
+    # ===============================
+
+    total_corridas = 0
+    total_ganhos = 0.0
+
+    for viagem in st.session_state.historico:
+
+        if viagem["motorista"] == usuario["nome"]:
+
+            total_corridas += 1
+
+            taxa = (
+                viagem["valor"]
+                * st.session_state.config["taxa_empresa"]
+                / 100
+            )
+
+            total_ganhos += viagem["valor"] - taxa
+
+    c1, c2 = st.columns(2)
+
+    c1.metric(
+        "🚖 Corridas",
+        total_corridas
+    )
+
+    c2.metric(
+        "💵 Ganhos",
+        f"R$ {total_ganhos:.2f}"
+    )
+
+    st.markdown("---")
+
+    # ===============================
+    # HISTÓRICO
+    # ===============================
+
+    st.subheader("📜 Histórico")
+
+    encontrou = False
+
+    for viagem in reversed(st.session_state.historico):
+
+        if viagem["motorista"] == usuario["nome"]:
+
+            encontrou = True
+
+            with st.container():
+
+                st.write(
+                    f"👤 Passageiro: {viagem['passageiro']}"
+                )
+
+                st.write(
+                    f"📍 Origem: {viagem['origem']}"
+                )
+
+                st.write(
+                    f"🏁 Destino: {viagem['destino']}"
+                )
+
+                st.write(
+                    f"💰 Valor: R$ {viagem['valor']:.2f}"
+                )
+
+                st.markdown("---")
+
+    if not encontrou:
+
+        st.info("Nenhuma corrida realizada ainda.")
+
+    st.markdown("---")
+
+    # ===============================
+    # ALTERAR DISTÂNCIA
+    # ===============================
+
+    st.subheader("📍 Atualizar Distância")
+
+    nova_distancia = st.slider(
+        "Distância até o próximo passageiro (km)",
+        min_value=0.1,
+        max_value=10.0,
+        value=float(usuario["distancia"]),
+        step=0.1
+    )
+
+    if st.button("Atualizar Distância"):
+
+        usuario["distancia"] = round(
+            nova_distancia,
+            2
+        )
+
+        st.success("Distância atualizada!")
+
+        st.rerun()
+
+    st.markdown("---")
+
+    # ===============================
+    # EXTRATO DO MOTORISTA
+    # ===============================
+
+    st.subheader("💳 Resumo Financeiro")
+
+    st.metric(
+        "Saldo Atual",
+        f"R$ {usuario['saldo']:.2f}"
+    )
+
+    st.metric(
+        "Ganhos Totais",
+        f"R$ {total_ganhos:.2f}"
+    )
+
