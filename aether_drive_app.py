@@ -311,3 +311,261 @@ if pagina == "Login / Cadastro":
         motoristas
     )
 
+# =====================================
+# PAINEL DO PASSAGEIRO
+# =====================================
+
+elif pagina == "Painel Passageiro":
+
+    st.title("🚖 Painel do Passageiro")
+
+    if not st.session_state.usuario_logado:
+        st.warning("Faça login primeiro.")
+        st.stop()
+
+    usuario = st.session_state.usuario_logado
+
+    if usuario["tipo"] != "passageiro":
+        st.error("Esta conta não pertence a um passageiro.")
+        st.stop()
+
+    st.success(f"Olá, {usuario['nome']}")
+
+    col1, col2 = st.columns(2)
+
+    col1.metric(
+        "💰 Saldo",
+        f"R$ {usuario['saldo']:.2f}"
+    )
+
+    col2.metric(
+        "🚖 Corridas",
+        len(st.session_state.historico)
+    )
+
+    st.markdown("---")
+
+    # =====================================
+    # RECARGA
+    # =====================================
+
+    st.subheader("💳 Adicionar Saldo")
+
+    valor_recarga = st.number_input(
+        "Valor da Recarga",
+        min_value=10.0,
+        value=20.0,
+        step=10.0
+    )
+
+    if st.button("Adicionar Saldo"):
+
+        usuario["saldo"] += valor_recarga
+
+        st.session_state.extrato.append({
+
+            "tipo": "Recarga",
+
+            "valor": valor_recarga
+
+        })
+
+        st.success(
+            f"Saldo atualizado para R$ {usuario['saldo']:.2f}"
+        )
+
+        st.rerun()
+
+    st.markdown("---")
+
+    # =====================================
+    # SOLICITAR CORRIDA
+    # =====================================
+
+    st.subheader("📍 Solicitar Corrida")
+
+    origem = st.text_input(
+        "Origem",
+        "Minha localização"
+    )
+
+    destino = st.text_input(
+        "Destino",
+        "Av. Paulista"
+    )
+
+    valor_corrida = round(
+        random.uniform(8, 30),
+        2
+    )
+
+    st.metric(
+        "Valor Estimado",
+        f"R$ {valor_corrida:.2f}"
+    )
+
+    if st.button(
+        "🚖 Chamar Motorista",
+        type="primary"
+    ):
+
+        if usuario["saldo"] < valor_corrida:
+
+            st.error("Saldo insuficiente.")
+
+            st.stop()
+
+        motoristas = [
+
+            motorista
+
+            for motorista in st.session_state.usuarios.values()
+
+            if motorista["tipo"] == "motorista"
+
+            and motorista.get("online", True)
+
+        ]
+
+        if len(motoristas) == 0:
+
+            st.error("Nenhum motorista disponível.")
+
+            st.stop()
+
+        motorista = min(
+
+            motoristas,
+
+            key=lambda m: m["distancia"]
+
+        )
+
+        taxa = (
+            valor_corrida *
+            st.session_state.config["taxa_empresa"]
+            / 100
+        )
+
+        ganho_motorista = valor_corrida - taxa
+
+        usuario["saldo"] -= valor_corrida
+
+        motorista["saldo"] += ganho_motorista
+
+        st.session_state.config["faturamento"] += taxa
+
+        viagem = {
+
+            "passageiro": usuario["nome"],
+
+            "motorista": motorista["nome"],
+
+            "origem": origem,
+
+            "destino": destino,
+
+            "valor": valor_corrida
+
+        }
+
+        st.session_state.historico.append(viagem)
+
+        st.session_state.extrato.append({
+
+            "tipo": "Corrida",
+
+            "valor": -valor_corrida
+
+        })
+
+        st.success("Motorista encontrado!")
+
+        c1, c2, c3 = st.columns(3)
+
+        c1.metric(
+            "Motorista",
+            motorista["nome"]
+        )
+
+        c2.metric(
+            "⭐ Nota",
+            motorista["nota"]
+        )
+
+        c3.metric(
+            "📍 Distância",
+            f"{motorista['distancia']} km"
+        )
+
+        st.info("🚘 Motorista a caminho...")
+
+        progresso = st.progress(0)
+
+        etapas = [
+
+            "📲 Procurando motorista...",
+
+            "✅ Motorista aceitou.",
+
+            "🚗 Motorista indo até você.",
+
+            "📍 Motorista chegou.",
+
+            "👤 Passageiro embarcou.",
+
+            "🛣️ Viagem iniciada.",
+
+            "🏁 Chegando ao destino.",
+
+            "✅ Corrida finalizada."
+
+        ]
+
+        for i, etapa in enumerate(etapas):
+
+            progresso.progress((i + 1) / len(etapas))
+
+            st.write(etapa)
+
+            time.sleep(0.7)
+
+        st.success("🎉 Corrida concluída!")
+
+        st.metric(
+            "Novo Saldo",
+            f"R$ {usuario['saldo']:.2f}"
+        )
+
+    st.markdown("---")
+
+    # =====================================
+    # HISTÓRICO
+    # =====================================
+
+    st.subheader("📜 Histórico")
+
+    if len(st.session_state.historico) == 0:
+
+        st.info("Nenhuma corrida realizada.")
+
+    else:
+
+        for viagem in reversed(st.session_state.historico):
+
+            if viagem["passageiro"] == usuario["nome"]:
+
+                st.write(
+
+                    f"🚖 {viagem['origem']} ➜ {viagem['destino']}"
+
+                )
+
+                st.caption(
+
+                    f"Motorista: {viagem['motorista']} | "
+
+                    f"Valor: R$ {viagem['valor']:.2f}"
+
+                )
+
