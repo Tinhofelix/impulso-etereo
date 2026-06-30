@@ -88,11 +88,18 @@ elif pagina == "Painel Passageiro":
     
     if st.button("Chamar App Inteligente", type="primary"):
         st.markdown("---")
+        valor_corrida = 8.53
+
+if st.session_state.usuario_logado["saldo"] >= valor_corrida:
+    st.session_state.usuario_logado["saldo"] -= valor_corrida
+else:
+    st.error("Saldo insuficiente!")
+    st.stop()
         st.subheader("⚡ Correspondência de IA Concluída!")
         c1, c2, c3 = st.columns(3)
         c1.metric("Motorista Selecionado", "Roberto Cruz (★ 4.9)")
         c2.metric("Distância até você", "0.49 km")
-        c3.metric("Valor Estimado", "R$ 8,53")
+        c3.metric("Valor Estimado", f"R$ {valor_corrida:.f}")
         st.info("🔮 Veículo preditivo em deslocamento. Tempo de espera: *2 minutos*.")
 
 # --- 3. PAINEL ADMINISTRADOR ---
