@@ -86,3 +86,84 @@ if st.session_state.config["modo_manutencao"]:
     st.error("🚧 Plataforma em manutenção.")
 
     st.stop()
+
+# =====================================
+# MENU LATERAL
+# =====================================
+
+st.sidebar.title(f"🚖 {st.session_state.config['nome_empresa']}")
+
+st.sidebar.caption(
+    f"Versão {st.session_state.config['versao']}"
+)
+
+st.sidebar.markdown("---")
+
+pagina = st.sidebar.radio(
+    "Navegação",
+    (
+        "Login / Cadastro",
+        "Painel Passageiro",
+        "Painel Motorista",
+        "Painel Administrador"
+    )
+)
+
+st.sidebar.markdown("---")
+
+if st.session_state.usuario_logado:
+
+    usuario = st.session_state.usuario_logado
+
+    st.sidebar.success(f"👤 {usuario['nome']}")
+
+    st.sidebar.write(
+        f"Tipo: {usuario['tipo'].capitalize()}"
+    )
+
+    st.sidebar.metric(
+        "💰 Saldo",
+        f"R$ {usuario['saldo']:.2f}"
+    )
+
+    if usuario["tipo"] == "motorista":
+
+        st.sidebar.metric(
+            "⭐ Avaliação",
+            usuario["nota"]
+        )
+
+    if st.sidebar.button("🚪 Sair"):
+
+        st.session_state.usuario_logado = None
+
+        st.rerun()
+
+else:
+
+    st.sidebar.info("Nenhum usuário logado.")
+
+st.sidebar.markdown("---")
+
+st.sidebar.metric(
+    "💵 Taxa da Plataforma",
+    f"{st.session_state.config['taxa_empresa']}%"
+)
+
+st.sidebar.metric(
+    "📈 Faturamento",
+    f"R$ {st.session_state.config['faturamento']:.2f}"
+)
+
+st.sidebar.metric(
+    "🔔 Notificações",
+    len(st.session_state.notificacoes)
+)
+
+st.sidebar.markdown("---")
+
+st.sidebar.caption(
+    f"📍 {st.session_state.config['cidade']}"
+)
+
+
