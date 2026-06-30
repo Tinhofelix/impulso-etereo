@@ -2,163 +2,542 @@ import streamlit as st
 import random
 import time
 
-# Configuração da página idêntica à original
-st.set_page_config(page_title="Impulso Etéreo", page_icon="🔮", layout="wide")
+# ==========================
+# CONFIGURAÇÃO DA PÁGINA
+# ==========================
+st.set_page_config(
+    page_title="Impulso Etéreo",
+    page_icon="🚖",
+    layout="wide"
+)
 
-# --- ESTADO DA SESSÃO (Banco de Dados na Memória da Nuvem) ---
-if "banco_usuarios" not in st.session_state:
-    st.session_state.banco_usuarios = {
-        "17484830720": {"nome": "Pedro Felix da Silva", "tipo": "passageiro", "saldo": 50.00},
-        "19399003795": {"nome": "Usuário Teste", "tipo": "passageiro", "saldo": 50.00}
+# ==========================
+# BANCO DE DADOS (MEMÓRIA)
+# ==========================
+if "usuarios" not in st.session_state:
+    st.session_state.usuarios = {
+        "17484830720": {
+            "nome": "Pedro Felix da Silva",
+            "tipo": "passageiro",
+            "saldo": 50.0
+        },
+        "11111111111": {
+            "nome": "Roberto Cruz",
+            "tipo": "motorista",
+            "saldo": 0.0,
+            "nota": 4.9,
+            "distancia": 0.49
+        },
+        "22222222222": {
+            "nome": "Ana Lima",
+            "tipo": "motorista",
+            "saldo": 0.0,
+            "nota": 4.8,
+            "distancia": 0.72
+        },
+        "33333333333": {
+            "nome": "Carlos Mendes",
+            "tipo": "motorista",
+            "saldo": 0.0,
+            "nota": 5.0,
+            "distancia": 0.31
+        }
     }
 
 if "usuario_logado" not in st.session_state:
     st.session_state.usuario_logado = None
 
-# --- MENU LATERAL IDÊNTICO ---
-st.sidebar.title("Impulso Etéreo")
+if "taxa_empresa" not in st.session_state:
+    st.session_state.taxa_empresa = 15
+
+# ==========================
+# MENU LATERAL
+# ==========================
+st.sidebar.title("🚖 Impulso Etéreo")
 st.sidebar.markdown("---")
-pagina = st.sidebar.radio("Navegação", ["Login / Cadastro", "Painel Passageiro", "Painel Administrador"])
+
+pagina = st.sidebar.radio(
+    "Menu",
+    [
+        "Login / Cadastro",
+        "Painel Passageiro",
+        "Painel Motorista",
+        "Painel Administrador"
+    ]
+)
+
 st.sidebar.markdown("---")
 
 if st.session_state.usuario_logado:
-    st.sidebar.success(f"👤 Logado: {st.session_state.usuario_logado['nome']}")
+    st.sidebar.success(
+        f"Logado como:\n\n{st.session_state.usuario_logado['nome']}"
+    )
 else:
-    st.sidebar.write("Nenhum usuário logado.")
+    st.sidebar.warning("Nenhum usuário logado.")
 
 st.sidebar.markdown("---")
-st.sidebar.code("🌐 Banco: Nuvem Ativa")
-st.sidebar.code("🛠️ Demonstração: aether_BR26")
+st.sidebar.caption("Versão 2.0")
 
-# --- 1. TELA DE LOGIN / CADASTRO ---
+# ==========================
+# LOGIN E CADASTRO
+# ==========================
 if pagina == "Login / Cadastro":
-    st.caption("Autenticação com CPF + validação biométrica facial (selfie simulada).")
-    
-    col1, col2 = st.columns(2)
-    
-    # Coluna 1: Entrar na plataforma
-    with col1:
-        st.header("Entrar")
-        cpf_login = st.text_input("CPF cadastrado", "", key="login_cpf")
-        
-        if st.button("Entrar na plataforma", use_container_width=True, type="primary"):
-            cpf_limpo = cpf_login.strip().replace(".", "").replace("-", "")
-            
-            if cpf_limpo in st.session_state.banco_usuarios:
-                st.session_state.usuario_logado = st.session_state.banco_usuarios[cpf_limpo]
-                st.success(f"👋 Bem-vindo de volta, {st.session_state.banco_usuarios[cpf_limpo]['nome']}!")
-                st.rerun()
-            else:
-                st.error("❌ CPF não encontrado. Faça o cadastro ao lado primeiro ou use seu CPF já pré-configurado.")
 
-    # Coluna 2: Novo Cadastro Completo
-    with col2:
-        st.header("Novo cadastro")
-        nome_novo = st.text_input("Nome completo", "pedro felix")
-        tipo_novo = st.selectbox("Tipo de conta", ["passageiro", "motorista"])
-        cpf_novo = st.text_input("CPF", "", key="cadastro_cpf")
-        selfie_novo = st.text_input("Token da Selfie (biometria)", "selfie_ok")
-        saldo_inicial = st.number_input("Saldo inicial (passageiro)", value=50.00, step=10.00)
-        
-        if st.button("Cadastrar e Validar por IA", use_container_width=True):
-            if not cpf_novo:
-                st.error("⚠️ Por favor, digite um CPF para realizar o cadastro.")
+    st.title("🔐 Login e Cadastro")
+
+    col1, col2 = st.columns(2)
+
+    # LOGIN
+    with col1:
+
+        st.subheader("Entrar")
+
+        cpf_login = st.text_input(
+            "CPF",
+            key="cpf_login"
+        )
+
+        if st.button("Entrar", use_container_width=True):
+
+            cpf = cpf_login.replace(".", "").replace("-", "").strip()
+
+            if cpf in st.session_state.usuarios:
+
+                st.session_state.usuario_logado = (
+                    st.session_state.usuarios[cpf]
+                )
+
+                st.success(
+                    f"Bem-vindo {st.session_state.usuario_logado['nome']}!"
+                )
+
+                st.rerun()
+
             else:
-                with st.spinner("IA executando prova de vida..."):
-                    time.sleep(1.0)
-                    cpf_novo_limpo = cpf_novo.strip().replace(".", "").replace("-", "")
-                    st.session_state.banco_usuarios[cpf_novo_limpo] = {
-                        "nome": nome_novo,
-                        "tipo": tipo_novo,
-                        "saldo": saldo_inicial
-                    }
-                    st.success(f"🎉 Conta criada com sucesso! O CPF {cpf_novo} já pode fazer login na coluna da esquerda.")
-                    
-# --- 2. PAINEL DO PASSAGEIRO ---
+                st.error("CPF não encontrado.")
+
+    # CADASTRO
+    with col2:
+
+        st.subheader("Novo Cadastro")
+
+        nome = st.text_input("Nome completo")
+
+        tipo = st.selectbox(
+            "Tipo",
+            [
+                "passageiro",
+                "motorista"
+            ]
+        )
+
+        cpf = st.text_input(
+            "CPF",
+            key="cpf_cadastro"
+        )
+
+        saldo = st.number_input(
+            "Saldo inicial",
+            min_value=0.0,
+            value=50.0
+        )
+
+        if st.button(
+            "Cadastrar",
+            use_container_width=True
+        ):
+
+            cpf_limpo = cpf.replace(".", "").replace("-", "").strip()
+
+            if cpf_limpo == "":
+                st.error("Digite um CPF.")
+            elif cpf_limpo in st.session_state.usuarios:
+                st.error("Esse CPF já está cadastrado.")
+            else:
+
+                st.session_state.usuarios[cpf_limpo] = {
+                    "nome": nome,
+                    "tipo": tipo,
+                    "saldo": saldo
+                }
+
+                st.success("Cadastro realizado com sucesso!")
+# ==========================
+# PAINEL DO PASSAGEIRO
+# ==========================
+
 elif pagina == "Painel Passageiro":
 
-    st.title("🗺️ Solicitar Viagem Preditiva")
-
-    if st.session_state.usuario_logado:
-        st.write(
-            f"Olá {st.session_state.usuario_logado['nome']}, "
-            f"seu saldo atual é de R$ {st.session_state.usuario_logado['saldo']:.2f}"
-        )
-
-        st.markdown("### 💳 Adicionar saldo")
-
-        valor_recarga = st.number_input(
-            "Valor da recarga",
-            min_value=10.0,
-            step=10.0
-        )
-
-        if st.button("Adicionar saldo"):
-            st.session_state.usuario_logado["saldo"] += valor_recarga
-            st.success(f"Recarga de R$ {valor_recarga:.2f} realizada com sucesso!")
-            st.rerun()
-
-    else:
-        st.warning("⚠️ Você precisa fazer o login na primeira tela para ver seu saldo real.")
-        st.write("Olá passageiro, seu saldo demonstrativo é de R$ 50,00")
-
-    destino = st.text_input(
-        "Para onde vamos hoje?",
-        "Av. Paulista, São Paulo"
-    )
-
-    if st.button("Chamar App Inteligente", type="primary"):
-
-        valor_corrida = 8.53
-
-        motoristas = [
-            {"nome": "Roberto Cruz", "nota": 4.9, "distancia": 0.49},
-            {"nome": "Ana Lima", "nota": 4.8, "distancia": 0.72},
-            {"nome": "Carlos Mendes", "nota": 5.0, "distancia": 0.31},
-            {"nome": "Juliana Souza", "nota": 4.7, "distancia": 1.10},
-        ]
-
-        motorista = min(motoristas, key=lambda m: m["distancia"])
+    st.title("🚖 Painel do Passageiro")
 
     if not st.session_state.usuario_logado:
-        st.error("Faça login antes de solicitar uma viagem.")
+        st.warning("Faça login primeiro.")
         st.stop()
 
-    if st.session_state.usuario_logado["saldo"] >= valor_corrida:
-        st.session_state.usuario_logado["saldo"] -= valor_corrida
-   else:
-        st.error("Saldo insuficiente!")
+    if st.session_state.usuario_logado["tipo"] != "passageiro":
+        st.error("Esta conta não é de passageiro.")
         st.stop()
 
-  st.markdown("---")
-  st.subheader("⚡ Correspondência de IA Concluída!")
+    usuario = st.session_state.usuario_logado
 
-  c1, c2, c3 = st.columns(3)
+    st.success(f"Olá, {usuario['nome']}")
 
-  c1.metric(
-      "Motorista Selecionado",
-      f'{motorista["nome"]} (★ {motorista["nota"]})'
-  )
-  
-  c2.metric(
-      "Distância até você",
-      f'{motorista["distancia"]:.2f} km'
-       
-  )
+    st.metric(
+        "💰 Saldo",
+        f"R$ {usuario['saldo']:.2f}"
+    )
 
-  c3.metric(
-      "Valor Estimado",
-      f"R$ {valor_corrida:.2f}"
-        
-  )
+    st.markdown("---")
 
-  st.info("🚘 Veículo preditivo em deslocamento. Tempo de espera: 2 minutos.")
-# --- 3. PAINEL ADMINISTRADOR ---
+    st.subheader("💳 Adicionar saldo")
+
+    valor_recarga = st.number_input(
+        "Valor",
+        min_value=10.0,
+        value=10.0,
+        step=10.0
+    )
+
+    if st.button("Adicionar saldo"):
+
+        usuario["saldo"] += valor_recarga
+
+        st.success(
+            f"Saldo atualizado para R$ {usuario['saldo']:.2f}"
+        )
+
+        st.rerun()
+
+    st.markdown("---")
+
+    st.subheader("📍 Solicitar viagem")
+
+    origem = st.text_input(
+        "Origem",
+        "Minha localização"
+    )
+
+    destino = st.text_input(
+        "Destino",
+        "Av. Paulista"
+    )
+
+    valor_corrida = round(random.uniform(8, 30), 2)
+
+    st.metric(
+        "Valor estimado",
+        f"R$ {valor_corrida:.2f}"
+    )
+
+    if st.button(
+        "🚖 Chamar motorista",
+        type="primary"
+    ):
+
+        if usuario["saldo"] < valor_corrida:
+            st.error("Saldo insuficiente.")
+            st.stop()
+
+        motoristas = []
+
+        for dados in st.session_state.usuarios.values():
+
+            if dados["tipo"] == "motorista":
+
+                motoristas.append(dados)
+
+        motorista = min(
+            motoristas,
+            key=lambda m: m["distancia"]
+        )
+
+        usuario["saldo"] -= valor_corrida
+
+        taxa = (
+            valor_corrida
+            * st.session_state.taxa_empresa
+            / 100
+        )
+
+        ganho_motorista = valor_corrida - taxa
+
+        motorista["saldo"] += ganho_motorista
+
+        if "historico" not in st.session_state:
+            st.session_state.historico = []
+
+        st.session_state.historico.append({
+            "passageiro": usuario["nome"],
+            "motorista": motorista["nome"],
+            "origem": origem,
+            "destino": destino,
+            "valor": valor_corrida
+        })
+
+        st.success("Motorista encontrado!")
+
+        c1, c2, c3 = st.columns(3)
+
+        c1.metric(
+            "Motorista",
+            motorista["nome"]
+        )
+
+        c2.metric(
+            "Nota",
+            f"⭐ {motorista['nota']}"
+        )
+
+        c3.metric(
+            "Distância",
+            f"{motorista['distancia']} km"
+        )
+
+        st.info("🚘 O motorista está a caminho.")
+
+        st.success(
+            f"Novo saldo: R$ {usuario['saldo']:.2f}"
+        )
+
+    if "historico" in st.session_state:
+
+        st.markdown("---")
+
+        st.subheader("📜 Histórico")
+
+        for viagem in reversed(st.session_state.historico):
+
+            st.write(
+                f"🚖 {viagem['passageiro']} → "
+                f"{viagem['destino']} | "
+                f"Motorista: {viagem['motorista']} | "
+                f"R$ {viagem['valor']:.2f}"
+            )
+# ==========================
+# PAINEL DO MOTORISTA
+# ==========================
+
+elif pagina == "Painel Motorista":
+
+    st.title("🚗 Painel do Motorista")
+
+    if not st.session_state.usuario_logado:
+        st.warning("Faça login primeiro.")
+        st.stop()
+
+    if st.session_state.usuario_logado["tipo"] != "motorista":
+        st.error("Esta conta não é de motorista.")
+        st.stop()
+
+    motorista = st.session_state.usuario_logado
+
+    st.success(f"Bem-vindo, {motorista['nome']}!")
+
+    st.metric(
+        "💰 Saldo Disponível",
+        f"R$ {motorista['saldo']:.2f}"
+    )
+
+    st.metric(
+        "⭐ Avaliação",
+        motorista.get("nota", 5.0)
+    )
+
+    st.markdown("---")
+
+    st.subheader("📍 Status")
+
+    status = st.selectbox(
+        "Disponibilidade",
+        [
+            "🟢 Online",
+            "🔴 Offline"
+        ]
+    )
+
+    if status == "🟢 Online":
+        st.success("Você está disponível para receber corridas.")
+    else:
+        st.warning("Você está offline.")
+
+    st.markdown("---")
+
+    st.subheader("📊 Estatísticas")
+
+    historico = st.session_state.get("historico", [])
+
+    minhas_corridas = [
+        viagem
+        for viagem in historico
+        if viagem["motorista"] == motorista["nome"]
+    ]
+
+    quantidade = len(minhas_corridas)
+
+    ganhos = sum(
+        viagem["valor"] *
+        (100 - st.session_state.taxa_empresa) / 100
+        for viagem in minhas_corridas
+    )
+
+    c1, c2 = st.columns(2)
+
+    c1.metric(
+        "🚖 Corridas realizadas",
+        quantidade
+    )
+
+    c2.metric(
+        "💵 Ganhos estimados",
+        f"R$ {ganhos:.2f}"
+    )
+
+    st.markdown("---")
+
+    st.subheader("📜 Histórico")
+
+    if quantidade == 0:
+
+        st.info("Nenhuma corrida realizada ainda.")
+
+    else:
+
+        for viagem in reversed(minhas_corridas):
+
+            st.container()
+
+            st.write(f"👤 Passageiro: {viagem['passageiro']}")
+            st.write(f"📍 Origem: {viagem['origem']}")
+            st.write(f"🏁 Destino: {viagem['destino']}")
+            st.write(f"💰 Valor da corrida: R$ {viagem['valor']:.2f}")
+
+            ganho = (
+                viagem["valor"] *
+                (100 - st.session_state.taxa_empresa)
+                / 100
+            )
+
+            st.success(
+                f"Recebido: R$ {ganho:.2f}"
+            )
+
+            st.markdown("---")
+# ==========================
+# PAINEL DO ADMINISTRADOR
+# ==========================
+
 elif pagina == "Painel Administrador":
-    st.title("📈 Relatório de Ganhos da Plataforma")
-    st.write("Acompanhe a sua taxa de 15% como dono em tempo real.")
-    
-    caixa1, caixa2 = st.columns(2)
-    caixa1.metric("Seu Lucro Líquido Retido (15%)", "R$ 1,28", delta="Faturamento Ativo")
-    caixa2.metric("Repasse Líquido do Motorista (85%)", "R$ 7,25")
-    st.success("💰 Transações Pix liquidadas e seguras pelo motor da rede.") 
+
+    st.title("👑 Painel do Administrador")
+
+    usuarios = st.session_state.usuarios
+    historico = st.session_state.get("historico", [])
+
+    passageiros = [
+        u for u in usuarios.values()
+        if u["tipo"] == "passageiro"
+    ]
+
+    motoristas = [
+        u for u in usuarios.values()
+        if u["tipo"] == "motorista"
+    ]
+
+    faturamento_total = sum(
+        viagem["valor"] for viagem in historico
+    )
+
+    lucro_empresa = sum(
+        viagem["valor"] *
+        st.session_state.taxa_empresa / 100
+        for viagem in historico
+    )
+
+    st.subheader("📊 Resumo Geral")
+
+    c1, c2 = st.columns(2)
+
+    c1.metric(
+        "👥 Passageiros",
+        len(passageiros)
+    )
+
+    c2.metric(
+        "🚗 Motoristas",
+        len(motoristas)
+    )
+
+    c3, c4 = st.columns(2)
+
+    c3.metric(
+        "🚖 Corridas",
+        len(historico)
+    )
+
+    c4.metric(
+        "💰 Faturamento",
+        f"R$ {faturamento_total:.2f}"
+    )
+
+    st.metric(
+        "🏦 Lucro da Plataforma",
+        f"R$ {lucro_empresa:.2f}"
+    )
+
+    st.markdown("---")
+
+    st.subheader("⚙️ Configuração da Comissão")
+
+    nova_taxa = st.slider(
+        "Porcentagem da plataforma (%)",
+        min_value=0,
+        max_value=30,
+        value=st.session_state.taxa_empresa
+    )
+
+    if nova_taxa != st.session_state.taxa_empresa:
+        st.session_state.taxa_empresa = nova_taxa
+        st.success(
+            f"Nova comissão definida em {st.session_state.taxa_empresa}%."
+        )
+
+    st.markdown("---")
+
+    st.subheader("👤 Passageiros Cadastrados")
+
+    for passageiro in passageiros:
+
+        st.write(
+            f"• {passageiro['nome']} | "
+            f"Saldo: R$ {passageiro['saldo']:.2f}"
+        )
+
+    st.markdown("---")
+
+    st.subheader("🚗 Motoristas")
+
+    for motorista in motoristas:
+
+        st.write(
+            f"• {motorista['nome']} | "
+            f"Saldo: R$ {motorista['saldo']:.2f}"
+        )
+
+    st.markdown("---")
+
+    st.subheader("📜 Últimas Corridas")
+
+    if len(historico) == 0:
+
+        st.info("Nenhuma corrida registrada.")
+
+    else:
+
+        for viagem in reversed(historico):
+
+            st.write(
+                f"🚖 {viagem['passageiro']} → "
+                f"{viagem['destino']} | "
+                f"{viagem['motorista']} | "
+                f"R$ {viagem['valor']:.2f}"
+            )
