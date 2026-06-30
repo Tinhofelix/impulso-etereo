@@ -742,3 +742,213 @@ elif pagina == "Painel Motorista":
         f"R$ {total_ganhos:.2f}"
     )
 
+# =====================================
+# PAINEL ADMINISTRADOR
+# =====================================
+
+elif pagina == "Painel Administrador":
+
+    st.title("👑 Painel do Administrador")
+
+    st.success("Centro de Controle da Plataforma")
+
+    st.markdown("---")
+
+    # =====================================
+    # CONTADORES
+    # =====================================
+
+    total_passageiros = sum(
+        1 for u in st.session_state.usuarios.values()
+        if u["tipo"] == "passageiro"
+    )
+
+    total_motoristas = sum(
+        1 for u in st.session_state.usuarios.values()
+        if u["tipo"] == "motorista"
+    )
+
+    motoristas_online = sum(
+        1 for u in st.session_state.usuarios.values()
+        if u["tipo"] == "motorista"
+        and u.get("online", False)
+    )
+
+    total_corridas = len(st.session_state.historico)
+
+    faturamento = st.session_state.config["faturamento"]
+
+    # =====================================
+    # DASHBOARD
+    # =====================================
+
+    c1, c2, c3, c4 = st.columns(4)
+
+    c1.metric(
+        "👥 Passageiros",
+        total_passageiros
+    )
+
+    c2.metric(
+        "🚗 Motoristas",
+        total_motoristas
+    )
+
+    c3.metric(
+        "🟢 Online",
+        motoristas_online
+    )
+
+    c4.metric(
+        "🚖 Corridas",
+        total_corridas
+    )
+
+    st.markdown("---")
+
+    c5, c6 = st.columns(2)
+
+    c5.metric(
+        "💰 Receita",
+        f"R$ {faturamento:.2f}"
+    )
+
+    c6.metric(
+        "💵 Comissão",
+        f"{st.session_state.config['taxa_empresa']}%"
+    )
+
+    st.markdown("---")
+
+    # =====================================
+    # CONFIGURAÇÕES
+    # =====================================
+
+    st.subheader("⚙️ Configurações")
+
+    nova_taxa = st.slider(
+        "Comissão da Plataforma (%)",
+        min_value=5,
+        max_value=30,
+        value=int(st.session_state.config["taxa_empresa"])
+    )
+
+    if st.button("Salvar Comissão"):
+
+        st.session_state.config["taxa_empresa"] = nova_taxa
+
+        st.success("Comissão atualizada!")
+
+        st.rerun()
+
+    modo = st.toggle(
+        "Modo Manutenção",
+        value=st.session_state.config["modo_manutencao"]
+    )
+
+    st.session_state.config["modo_manutencao"] = modo
+
+    aceitar = st.toggle(
+        "Aceitar novas corridas",
+        value=st.session_state.config["aceitar_corridas"]
+    )
+
+    st.session_state.config["aceitar_corridas"] = aceitar
+
+    st.markdown("---")
+
+    # =====================================
+    # USUÁRIOS
+    # =====================================
+
+    st.subheader("👥 Usuários")
+
+    for usuario in st.session_state.usuarios.values():
+
+        with st.expander(usuario["nome"]):
+
+            st.write(f"CPF: {usuario['cpf']}")
+            st.write(f"Tipo: {usuario['tipo']}")
+            st.write(f"Saldo: R$ {usuario['saldo']:.2f}")
+
+            if usuario["tipo"] == "motorista":
+
+                st.write(f"Nota: ⭐ {usuario['nota']}")
+                st.write(
+                    f"Online: {'Sim' if usuario.get('online', False) else 'Não'}"
+                )
+
+    st.markdown("---")
+
+    # =====================================
+    # HISTÓRICO
+    # =====================================
+
+    st.subheader("📜 Histórico Geral")
+
+    if len(st.session_state.historico) == 0:
+
+        st.info("Nenhuma corrida realizada.")
+
+    else:
+
+        for viagem in reversed(st.session_state.historico):
+
+            st.write(
+                f"🚖 {viagem['passageiro']} → {viagem['destino']}"
+            )
+
+            st.caption(
+                f"Motorista: {viagem['motorista']} | "
+                f"Origem: {viagem['origem']} | "
+                f"Valor: R$ {viagem['valor']:.2f}"
+            )
+
+    st.markdown("---")
+
+    # =====================================
+    # NOTIFICAÇÕES
+    # =====================================
+
+    st.subheader("🔔 Notificações")
+
+    if len(st.session_state.notificacoes) == 0:
+
+        st.info("Nenhuma notificação.")
+
+    else:
+
+        for aviso in reversed(st.session_state.notificacoes):
+
+            st.write(f"• {aviso}")
+
+    if st.button("Limpar Notificações"):
+
+        st.session_state.notificacoes.clear()
+
+        st.success("Notificações removidas.")
+
+        st.rerun()
+
+    st.markdown("---")
+
+    # =====================================
+    # SOBRE
+    # =====================================
+
+    st.subheader("ℹ️ Plataforma")
+
+    st.write(
+        f"Empresa: {st.session_state.config['nome_empresa']}"
+    )
+
+    st.write(
+        f"Versão: {st.session_state.config['versao']}"
+    )
+
+    st.write(
+        f"Cidade: {st.session_state.config['cidade']}"
+    )
+
+    st.success("Sistema funcionando normalmente.")
+
