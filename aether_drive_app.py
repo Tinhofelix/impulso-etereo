@@ -270,6 +270,31 @@ elif pagina == "Painel Passageiro":
 
         st.success("Motorista encontrado!")
 
+        # ==========================
+# STATUS DA CORRIDA
+# ==========================
+
+st.markdown("---")
+st.subheader("📲 Status da Corrida")
+
+status = [
+    "🔍 Procurando motorista...",
+    "✅ Motorista aceitou a corrida",
+    "🚘 Motorista a caminho",
+    "📍 Motorista chegou ao local",
+    "👤 Passageiro embarcou",
+    "🏁 Corrida finalizada"
+]
+
+barra = st.progress(0)
+
+for i, etapa in enumerate(status):
+    barra.progress((i + 1) / len(status))
+    st.write(etapa)
+    time.sleep(0.8)
+
+st.success("🎉 Corrida concluída com sucesso!")
+
         c1, c2, c3 = st.columns(3)
 
         c1.metric(
