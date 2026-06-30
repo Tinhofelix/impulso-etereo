@@ -318,7 +318,6 @@ if st.button("Enviar avaliação"):
 
     st.success("Obrigado pela sua avaliação!")
 
-        st.success(
             f"Novo saldo: R$ {usuario['saldo']:.2f}"
         )
 
