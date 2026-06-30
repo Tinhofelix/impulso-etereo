@@ -297,6 +297,7 @@ st.info("🚘 O motorista está a caminho.")
 
 st.success(
     f"novo saldo: R$ {usuario['saldo']:.2f}"
+)
 
 st.markdown("---")
 st.subheader("⭐ Avaliar motorista")
