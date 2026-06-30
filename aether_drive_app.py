@@ -8,8 +8,8 @@ st.set_page_config(page_title="Impulso Etéreo", page_icon="🔮", layout="wide"
 # --- ESTADO DA SESSÃO (Banco de Dados na Memória da Nuvem) ---
 if "banco_usuarios" not in st.session_state:
     st.session_state.banco_usuarios = {
-        "17484830720": {"nome": "Pedro Felix da Silva", "tipo": "passenger", "saldo": 50.00},
-        "19399003795": {"nome": "Usuário Teste", "tipo": "passenger", "saldo": 50.00}
+        "17484830720": {"nome": "Pedro Felix da Silva", "tipo": "passageiro", "saldo": 50.00},
+        "19399003795": {"nome": "Usuário Teste", "tipo": "passageiro", "saldo": 50.00}
     }
 
 if "usuario_logado" not in st.session_state:
@@ -55,7 +55,7 @@ if pagina == "Login / Cadastro":
     with col2:
         st.header("Novo cadastro")
         nome_novo = st.text_input("Nome completo", "pedro felix")
-        tipo_novo = st.selectbox("Tipo de conta", ["passenger", "motorista"])
+        tipo_novo = st.selectbox("Tipo de conta", ["passageiro", "motorista"])
         cpf_novo = st.text_input("CPF", "", key="cadastro_cpf")
         selfie_novo = st.text_input("Token da Selfie (biometria)", "selfie_ok")
         saldo_inicial = st.number_input("Saldo inicial (passageiro)", value=50.00, step=10.00)
@@ -103,4 +103,4 @@ elif pagina == "Painel Administrador":
     caixa1, caixa2 = st.columns(2)
     caixa1.metric("Seu Lucro Líquido Retido (15%)", "R$ 1,28", delta="Faturamento Ativo")
     caixa2.metric("Repasse Líquido do Motorista (85%)", "R$ 7,25")
-    st.success("💰 Transações Pix liquidadas e seguras pelo motor da rede.")
+    st.success("💰 Transações Pix liquidadas e seguras pelo motor da rede.") Strin.out.prinln(String ags []
