@@ -73,36 +73,86 @@ if pagina == "Login / Cadastro":
                         "saldo": saldo_inicial
                     }
                     st.success(f"🎉 Conta criada com sucesso! O CPF {cpf_novo} já pode fazer login na coluna da esquerda.")
-
+                    
 # --- 2. PAINEL DO PASSAGEIRO ---
 elif pagina == "Painel Passageiro":
+
     st.title("🗺️ Solicitar Viagem Preditiva")
-    
+
     if st.session_state.usuario_logado:
-        st.write(f"Olá {st.session_state.usuario_logado['nome']}, seu saldo atual é de R$ {st.session_state.usuario_logado['saldo']:.2f}")
+        st.write(
+            f"Olá {st.session_state.usuario_logado['nome']}, "
+            f"seu saldo atual é de R$ {st.session_state.usuario_logado['saldo']:.2f}"
+        )
+
+        st.markdown("### 💳 Adicionar saldo")
+
+        valor_recarga = st.number_input(
+            "Valor da recarga",
+            min_value=10.0,
+            step=10.0
+        )
+
+        if st.button("Adicionar saldo"):
+            st.session_state.usuario_logado["saldo"] += valor_recarga
+            st.success(f"Recarga de R$ {valor_recarga:.2f} realizada com sucesso!")
+            st.rerun()
+
     else:
         st.warning("⚠️ Você precisa fazer o login na primeira tela para ver seu saldo real.")
         st.write("Olá passageiro, seu saldo demonstrativo é de R$ 50,00")
-    
-    destino = st.text_input("Para onde vamos hoje?", "Av. Paulista, São Paulo")
-    
-if st.button("Chamar App Inteligente", type="primary"):
-    st.markdown("---")
-    valor_corrida = 8.53  
-        
+
+    destino = st.text_input(
+        "Para onde vamos hoje?",
+        "Av. Paulista, São Paulo"
+    )
+
+    if st.button("Chamar App Inteligente", type="primary"):
+
+        valor_corrida = 8.53
+
+        motoristas = [
+            {"nome": "Roberto Cruz", "nota": 4.9, "distancia": 0.49},
+            {"nome": "Ana Lima", "nota": 4.8, "distancia": 0.72},
+            {"nome": "Carlos Mendes", "nota": 5.0, "distancia": 0.31},
+            {"nome": "Juliana Souza", "nota": 4.7, "distancia": 1.10},
+        ]
+
+        motorista = min(motoristas, key=lambda m: m["distancia"])
+
+    if not st.session_state.usuario_logado:
+        st.error("Faça login antes de solicitar uma viagem.")
+        st.stop()
+
     if st.session_state.usuario_logado["saldo"] >= valor_corrida:
         st.session_state.usuario_logado["saldo"] -= valor_corrida
-    else:
+   else:
         st.error("Saldo insuficiente!")
         st.stop()
 
-    st.subheader("⚡ Correspondência de IA Concluída!")
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Motorista Selecionado", "Roberto Cruz (★ 4.9)")
-    c2.metric("Distância até você", "0.49 km")
-    c3.metric("Valor Estimado", f"R$ {valor_corrida:.2f}")
-    st.info("🚘 Veículo preditivo em deslocamento. Tempo de espera: 2 minutos.")
+  st.markdown("---")
+  st.subheader("⚡ Correspondência de IA Concluída!")
 
+  c1, c2, c3 = st.columns(3)
+
+  c1.metric(
+      "Motorista Selecionado",
+      f'{motorista["nome"]} (★ {motorista["nota"]})'
+  )
+  
+  c2.metric(
+      "Distância até você",
+      f'{motorista["distancia"]:.2f} km'
+       
+  )
+
+  c3.metric(
+      "Valor Estimado",
+      f"R$ {valor_corrida:.2f}"
+        
+  )
+
+  st.info("🚘 Veículo preditivo em deslocamento. Tempo de espera: 2 minutos.")
 # --- 3. PAINEL ADMINISTRADOR ---
 elif pagina == "Painel Administrador":
     st.title("📈 Relatório de Ganhos da Plataforma")
