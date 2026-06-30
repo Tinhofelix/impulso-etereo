@@ -295,6 +295,25 @@ elif pagina == "Painel Passageiro":
 
         st.info("🚘 O motorista está a caminho.")
 
+    st.markdown("---")
+st.subheader("⭐ Avaliar motorista")
+
+nota = st.slider(
+    "Sua avaliação",
+    min_value=1,
+    max_value=5,
+    value=5
+)
+
+if st.button("Enviar avaliação"):
+
+    motorista["nota"] = round(
+        (motorista["nota"] + nota) / 2,
+        1
+    )
+
+    st.success("Obrigado pela sua avaliação!")
+
         st.success(
             f"Novo saldo: R$ {usuario['saldo']:.2f}"
         )
