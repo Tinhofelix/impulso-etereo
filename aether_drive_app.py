@@ -229,10 +229,7 @@ elif pagina == "Painel Passageiro":
         f"R$ {valor_corrida:.2f}"
     )
 
-    if st.button(
-        "🚖 Chamar motorista",
-        type="primary"
-    ):
+    if st.button("🚖 Chamar motorista", type="primary"):
 
         if usuario["saldo"] < valor_corrida:
             st.error("Saldo insuficiente.")
@@ -241,9 +238,7 @@ elif pagina == "Painel Passageiro":
         motoristas = []
 
         for dados in st.session_state.usuarios.values():
-
             if dados["tipo"] == "motorista":
-
                 motoristas.append(dados)
 
         motorista = min(
@@ -254,9 +249,8 @@ elif pagina == "Painel Passageiro":
         usuario["saldo"] -= valor_corrida
 
         taxa = (
-            valor_corrida
-            * st.session_state.taxa_empresa
-            / 100
+            valor_corrida *
+            st.session_state.taxa_empresa / 100
         )
 
         ganho_motorista = valor_corrida - taxa
@@ -293,38 +287,35 @@ elif pagina == "Painel Passageiro":
             f"{motorista['distancia']} km"
         )
 
-st.info("🚘 O motorista está a caminho.")
+        st.info("🚘 O motorista está a caminho.")
 
-st.success(
-    f"novo saldo: R$ {usuario['saldo']:.2f}"
-)
-
-st.markdown("---")
-st.subheader("⭐ Avaliar motorista")
-
-nota = st.slider(
-    "Sua avaliação",
-    min_value=1,
-    max_value=5,
-    value=5
-)
-
-if st.button("Enviar avaliação"):
-
-    motorista["nota"] = round(
-        (motorista["nota"] + nota) / 2,
-        1
-    )
-
-    st.success("Obrigado pela sua avaliação!")
-
+        st.success(
             f"Novo saldo: R$ {usuario['saldo']:.2f}"
         )
+
+        st.markdown("---")
+        st.subheader("⭐ Avaliar motorista")
+
+        nota = st.slider(
+            "Sua avaliação",
+            min_value=1,
+            max_value=5,
+            value=5,
+            key="avaliacao_motorista"
+        )
+
+        if st.button("Enviar avaliação"):
+
+            motorista["nota"] = round(
+                (motorista["nota"] + nota) / 2,
+                1
+            )
+
+            st.success("Obrigado pela sua avaliação!")
 
     if "historico" in st.session_state:
 
         st.markdown("---")
-
         st.subheader("📜 Histórico")
 
         for viagem in reversed(st.session_state.historico):
